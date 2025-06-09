@@ -1,0 +1,40 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: gunicorn -k eventlet -w 1 --bind 0.0.0.0:5000 app:app
+    # Mount the current directory as a volume for live code updates
+    volumes:
+      - .:/app
+      # For large data files, consider mounting only specific directories instead of the entire project
+      # Example:
+      # - ./CICIDS2017:/app/CICIDS2017
+      # - ./model:/app/model
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - EMAIL_ADDRESS=teenlordz@gmail.com
+      - EMAIL_PASSWORD=hegz mljd kjol agrl
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    command: celery -A app.celery worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - EMAIL_ADDRESS=teenlordz@gmail.com
+      - EMAIL_PASSWORD=hegz mljd kjol agrl
+    depends_on:
+      - redis

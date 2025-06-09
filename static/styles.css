@@ -1,0 +1,246 @@
+/* Base Variables */
+:root {
+    /* Light Mode */
+    --light-bg: #cbdcf6;
+    --light-text: #333;
+    --light-card-bg: #ffffff;
+    --light-border: #e1e5eb;
+    --light-header-bg: #ffffff;
+    
+    /* Dark Mode */
+    --dark-bg: #27275b;
+    --dark-text: #e0e0e0;
+    --dark-card-bg: #16213e;
+    --dark-border: #2a3a5e;
+    --dark-header-bg: #0f3460;
+}
+
+/* Light Mode (default) */
+body.light-mode {
+    background-color: var(--light-bg);
+    color: var(--light-text);
+}
+
+.light-mode .dashboard-card {
+    background: var(--light-card-bg);
+    border: 1px solid var(--light-border);
+}
+
+.light-mode .header {
+    border-bottom: 1px solid var(--light-border);
+}
+
+/* Dark Mode */
+body.dark-mode {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+}
+
+.dark-mode .dashboard-card {
+    background: var(--dark-card-bg);
+    border: 1px solid var(--dark-border);
+}
+
+.dark-mode .header {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark-mode .alert-item {
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.dark-mode .form-control {
+    background-color: #2a3a5e;
+    color: #e0e0e0;
+    border: 1px solid #3a4a6e;
+}
+
+/* Mode Toggle Button */
+.mode-toggle {
+    background-color: #4a5568;
+    color: white;
+    margin-right: 10px;
+}
+
+.dark-mode .mode-toggle {
+    background-color: #e2e8f0;
+    color: #2d3748;
+}
+
+/* Update existing styles to use variables */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    transition: border-color 0.3s;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+}
+
+/* Main dashboard styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f7fa;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e1e5eb;
+}
+
+.header h1 {
+    color: #2c3e50;
+    margin: 0;
+}
+
+/* Dashboard cards */
+.dashboard-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+/* Threat indicators - light mode */
+.light-mode .threat-critical {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.light-mode .threat-high {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+/* Threat indicators - dark mode */
+.dark-mode .threat-critical {
+    background-color: #5c1a1a;
+    color: #ff8a80;
+}
+
+.dark-mode .threat-high {
+    background-color: #5c3b1a;
+    color: #ffb74d;
+}
+
+/* Traffic chart */
+.traffic-chart {
+    height: 300px;
+    width: 100%;
+}
+
+/* Alert list */
+.alert-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.alert-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alert-item:last-child {
+    border-bottom: none;
+}
+
+.alert-time {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    background-color: #3498db;
+    color: white;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn:hover {
+    background-color: #2980b9;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.dashboard-card, .alert-item, .btn, .form-control {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}

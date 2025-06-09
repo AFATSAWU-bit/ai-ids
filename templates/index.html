@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Driven Intrusion Detection System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css">
+    <!-- link rel="stylesheet" href="/static/styles.css" -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-md-12 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="fas fa-shield-alt text-primary"></i> AI-Driven Intrusion Detection System
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button id="startMonitoring" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-play"></i> Start Monitoring
+                            </button>
+                            <button id="stopMonitoring" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                            <button id="exportData" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status Cards -->
+                <div class="row mb-4">
+                    <div class="col-xl-2 col-md-4">
+                        <div class="card text-white bg-primary mb-3">
+                            <div class="card-header">System Status</div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="systemStatus">Active</h5>
+                                <p class="card-text" id="uptime">Uptime: 00:00:00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="card text-white bg-success mb-3">
+                            <div class="card-header">Threats Detected</div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="threatsCount">0</h5>
+                                <p class="card-text">Today</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="card text-white bg-warning mb-3">
+                            <div class="card-header">Last Detection</div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="lastDetection">None</h5>
+                                <p class="card-text" id="lastDetectionTime"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="card text-white bg-info mb-3">
+                            <div class="card-header">Traffic Volume</div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="trafficVolume">0</h5>
+                                <p class="card-text">Packets/min</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="card text-white bg-secondary mb-3">
+                            <div class="card-header">CPU Usage</div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="cpuUsage">0%</h5>
+                                <p class="card-text">System Load</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4">
+                        <div class="card text-white bg-dark mb-3">
+                            <div class="card-header">Memory Usage</div>
+                            <div class="card-body">
+                                <h5 class="card-title" id="memoryUsage">0%</h5>
+                                <p class="card-text">RAM Utilization</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traffic Overview Section -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <i class="fas fa-chart-line me-1"></i>
+                                Real-time Network Traffic Analysis
+                                <div class="float-end">
+                                    <select id="timeRange" class="form-select form-select-sm d-inline-block w-auto">
+                                        <option value="5">Last 5 min</option>
+                                        <option value="15">Last 15 min</option>
+                                        <option value="30">Last 30 min</option>
+                                        <option value="60" selected>Last 1 hour</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="trafficChart" style="height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <i class="fas fa-chart-pie me-1"></i>
+                                Traffic Composition
+                            </div>
+                            <div class="card-body">
+                                <canvas id="protocolChart" style="height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threat Analysis Section -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                Threat Distribution
+                            </div>
+                            <div class="card-body">
+                                <canvas id="threatChart" style="height: 300px;"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <i class="fas fa-map-marked-alt me-1"></i>
+                                Geographic Threat Origins
+                            </div>
+                            <div class="card-body">
+                                <div id="geoMap" style="height: 300px; background-color: #f8f9fa; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                                    <p class="text-muted">Map visualization will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traffic Filter and Analysis Controls -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-filter me-1"></i>
+                        Traffic Filter Controls
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="filterProtocol" class="form-label">Protocol</label>
+                                <select class="form-select" id="filterProtocol">
+                                    <option value="all">All Protocols</option>
+                                    <option value="tcp">TCP</option>
+                                    <option value="udp">UDP</option>
+                                    <option value="icmp">ICMP</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterSeverity" class="form-label">Severity</label>
+                                <select class="form-select" id="filterSeverity">
+                                    <option value="all">All Severities</option>
+                                    <option value="critical">Critical</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                    <option value="info">Informational</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterSource" class="form-label">Source IP</label>
+                                <input type="text" class="form-control" id="filterSource" placeholder="Filter by source IP">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterDestination" class="form-label">Destination IP</label>
+                                <input type="text" class="form-control" id="filterDestination" placeholder="Filter by destination IP">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">Time Range</span>
+                                    <input type="datetime-local" class="form-control" id="filterStartTime">
+                                    <input type="datetime-local" class="form-control" id="filterEndTime">
+                                    <button class="btn btn-outline-secondary" type="button" id="applyFilters">
+                                        <i class="fas fa-filter"></i> Apply
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-outline-danger me-2" id="clearFilters">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </button>
+                                <button class="btn btn-outline-primary" id="advancedAnalysis">
+                                    <i class="fas fa-chart-bar"></i> Advanced Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Traffic Monitoring -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-network-wired me-1"></i>
+                        Live Traffic Monitor
+                        <div class="float-end">
+                            <div class="form-check form-switch d-inline-block me-3">
+                                <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                                <label class="form-check-label" for="autoRefresh">Auto-refresh</label>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary" id="pauseMonitoring">
+                                    <i class="fas fa-pause"></i> Pause
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" id="refreshNow">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-striped table-hover table-sm mb-0">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Source IP</th>
+                                        <th>Destination IP</th>
+                                        <th>Protocol</th>
+                                        <th>Port</th>
+                                        <th>Size (bytes)</th>
+                                        <th>Duration</th>
+                                        <th>Threat Level</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liveTraffic">
+                                    <!-- Live traffic data will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <div class="row">
+                            <div class="col-md-6">
+                                Showing <span id="visibleRecords">0</span> of <span id="totalRecords">0</span> records
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small>Last updated: <span id="lastUpdated">Never</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threat Detection Log -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-clipboard-list me-1"></i>
+                        Threat Detection Log
+                        <div class="float-end">
+                            <button class="btn btn-sm btn-outline-success" id="exportLogs">
+                                <i class="fas fa-file-export"></i> Export Logs
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-striped table-sm">
+                                <thead class="sticky-top bg-light">
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Source IP</th>
+                                        <th>Destination IP</th>
+                                        <th>Threat Type</th>
+                                        <th>Confidence</th>
+                                        <th>Protocol</th>
+                                        <th>Details</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="threatLogs">
+                                    <!-- Threat logs will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <nav aria-label="Threat log pagination">
+                            <ul class="pagination pagination-sm justify-content-center mb-0">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Security Alert
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="alertModalBody">
+                    <!-- Alert content will be inserted here -->
+                </div>
+                <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="dismissAlertBtn">
+            <i class="fas fa-times"></i> Dismiss
+        </button>
+        <button type="button" class="btn btn-primary" id="viewThreatDetails">
+            <i class="fas fa-search"></i> Investigate
+        </button>
+        <button type="button" class="btn btn-success" id="addToWhitelist">
+            <i class="fas fa-check-circle"></i> Whitelist
+        </button>
+        <button type="button" class="btn btn-warning" id="blockSource">
+            <i class="fas fa-ban"></i> Block Source
+        </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Traffic Details Modal -->
+    <div class="modal fade" id="trafficDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Traffic Packet Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <i class="fas fa-info-circle"></i> Basic Information
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Timestamp:</strong> <span id="detailTimestamp">-</span></p>
+                                            <p><strong>Source IP:</strong> <span id="detailSrcIp">-</span></p>
+                                            <p><strong>Source Port:</strong> <span id="detailSrcPort">-</span></p>
+                                            <p><strong>Source MAC:</strong> <span id="detailSrcMac">-</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Destination IP:</strong> <span id="detailDstIp">-</span></p>
+                                            <p><strong>Destination Port:</strong> <span id="detailDstPort">-</span></p>
+                                            <p><strong>Destination MAC:</strong> <span id="detailDstMac">-</span></p>
+                                            <p><strong>Protocol:</strong> <span id="detailProtocol">-</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-shield-alt"></i> Security Analysis
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Threat Classification:</strong> 
+                                        <span class="badge" id="detailThreatClass">-</span>
+                                    </p>
+                                    <p><strong>Confidence Level:</strong> 
+                                        <span id="detailConfidence">-</span>%
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar" id="detailConfidenceBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </p>
+                                    <p><strong>Risk Score:</strong> 
+                                        <span id="detailRiskScore">-</span>/100
+                                        <div class="progress mt-1">
+                                            <div class="progress-bar bg-danger" id="detailRiskBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </p>
+                                    <p><strong>AI Analysis:</strong> 
+                                        <span id="detailAiAnalysis">-</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <i class="fas fa-code"></i> Packet Contents
+                                </div>
+                                <div class="card-body p-0">
+                                    <pre class="m-0 p-3" id="detailPacketContents" style="height: 100%; overflow: auto; background-color: #f8f9fa; border-radius: 0 0 4px 4px;">No packet data available</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <i class="fas fa-history"></i> Related Activity
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Timestamp</th>
+                                                    <th>Type</th>
+                                                    <th>Source</th>
+                                                    <th>Destination</th>
+                                                    <th>Details</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="relatedActivity">
+                                                <!-- Related activity will be inserted here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Export Packet</button>
+                    <button type="button" class="btn btn-danger">Block Source</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script>
+        // Initialize Socket.IO connection
+        const socket = io();
+        let threatCount = 0;
+        let trafficChart, protocolChart, threatChart;
+        let monitoringActive = false;
+        let startTime = new Date();
+        let trafficData = {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Benign Traffic',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Suspicious Traffic',
+                    data: [],
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Malicious Traffic',
+                    data: [],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        };
+
+        // Initialize Charts
+        function initCharts() {
+            // Traffic Chart
+            const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+            trafficChart = new Chart(trafficCtx, {
+                type: 'line',
+                data: trafficData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Network Traffic Patterns',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Packets per minute'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+
+            // Protocol Distribution Chart
+            const protocolCtx = document.getElementById('protocolChart').getContext('2d');
+            protocolChart = new Chart(protocolCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['TCP', 'UDP', 'ICMP', 'Other'],
+                    datasets: [{
+                        data: [45, 30, 15, 10],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Protocol Distribution',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Threat Distribution Chart
+            const threatCtx = document.getElementById('threatChart').getContext('2d');
+            threatChart = new Chart(threatCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Brute Force', 'DDoS', 'SQL Injection', 'Port Scan', 'Malware', 'Phishing', 'Other'],
+                    datasets: [{
+                        label: 'Threat Count',
+                        data: [12, 8, 5, 15, 7, 3, 2],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(199, 199, 199, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(199, 199, 199, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Threat Distribution',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Detections'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Simulate initial data
+            simulateInitialData();
+        }
+
+        // Simulate initial chart data
+        function simulateInitialData() {
+            const now = new Date();
+            for (let i = 0; i < 30; i++) {
+                const time = new Date(now.getTime() - (30 - i) * 60000);
+                const timeString = time.getHours() + ':' + (time.getMinutes() < 10 ? '0' : '') + time.getMinutes();
+                
+                trafficData.labels.push(timeString);
+                trafficData.datasets[0].data.push(Math.floor(Math.random() * 100));
+                trafficData.datasets[1].data.push(Math.floor(Math.random() * 30));
+                trafficData.datasets[2].data.push(Math.floor(Math.random() * 15));
+            }
+            
+            trafficChart.update();
+        }
+
+        // Update charts with new data
+        function updateCharts(trafficData) {
+            const now = new Date();
+            const timeString = now.getHours() + ':' + now.getMinutes() + ':' + (now.getSeconds() < 10 ? '0' : '') + now.getSeconds();
+            
+            // Update traffic chart
+            if (trafficData.labels.length >= 30) {
+                trafficData.labels.shift();
+                trafficData.datasets.forEach(dataset => dataset.data.shift());
+            }
+            
+            trafficData.labels.push(timeString);
+            
+            // Simulate traffic updates (in a real system, this would come from actual data)
+            trafficData.datasets[0].data.push(Math.floor(Math.random() * 100));
+            trafficData.datasets[1].data.push(Math.floor(Math.random() * 30));
+            trafficData.datasets[2].data.push(Math.floor(Math.random() * 15));
+            
+            trafficChart.update();
+            
+            // Update protocol distribution (simulated)
+            protocolChart.data.datasets[0].data = [
+                Math.floor(Math.random() * 100),
+                Math.floor(Math.random() * 80),
+                Math.floor(Math.random() * 50),
+                Math.floor(Math.random() * 30)
+            ];
+            protocolChart.update();
+            
+            // Update threat distribution (simulated)
+            threatChart.data.datasets[0].data = [
+                Math.floor(Math.random() * 20),
+                Math.floor(Math.random() * 15),
+                Math.floor(Math.random() * 10),
+                Math.floor(Math.random() * 25),
+                Math.floor(Math.random() * 12),
+                Math.floor(Math.random() * 8),
+                Math.floor(Math.random() * 5)
+            ];
+            threatChart.update();
+        }
+
+        // Add entry to live traffic table
+        function addLiveTrafficEntry(entry) {
+            const table = document.getElementById('liveTraffic');
+            const newRow = document.createElement('tr');
+            
+            // Set row class based on threat level
+            if (entry.threatLevel === 'High') {
+                newRow.classList.add('table-danger');
+            } else if (entry.threatLevel === 'Medium') {
+                newRow.classList.add('table-warning');
+            } else if (entry.threatLevel === 'Low') {
+                newRow.classList.add('table-info');
+            }
+            
+            newRow.innerHTML = `
+                <td>${entry.timestamp}</td>
+                <td>${entry.srcIp}</td>
+                <td>${entry.dstIp}</td>
+                <td>${entry.protocol}</td>
+                <td>${entry.port}</td>
+                <td>${entry.size}</td>
+                <td>${entry.duration} ms</td>
+                <td>
+                    <span class="badge bg-${getThreatLevelColor(entry.threatLevel)}">
+                        ${entry.threatLevel}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-details" data-id="${entry.id}">
+                        <i class="fas fa-search"></i> Details
+                    </button>
+                </td>
+            `;
+            
+            table.insertBefore(newRow, table.firstChild);
+            
+            // Limit to 100 entries
+            if (table.children.length > 100) {
+                table.removeChild(table.lastChild);
+            }
+            
+            // Update record count
+            document.getElementById('visibleRecords').textContent = table.children.length;
+        }
+
+        // Add entry to threat log
+        function addThreatLogEntry(entry) {
+            const table = document.getElementById('threatLogs');
+            const newRow = document.createElement('tr');
+            
+            newRow.innerHTML = `
+                <td>${entry.timestamp}</td>
+                <td>${entry.srcIp}</td>
+                <td>${entry.dstIp}</td>
+                <td>
+                    <span class="badge bg-${getThreatLevelColor(entry.threatType)}">
+                        ${entry.threatType}
+                    </span>
+                </td>
+                <td>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar bg-${getThreatLevelColor(entry.threatType)}" 
+                             role="progressbar" style="width: ${entry.confidence}%" 
+                             aria-valuenow="${entry.confidence}" aria-valuemin="0" aria-valuemax="100">
+                            ${entry.confidence}%
+                        </div>
+                    </div>
+                </td>
+                <td>${entry.protocol}</td>
+                <td class="text-truncate" style="max-width: 150px;" title="${entry.details}">
+                    ${entry.details}
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-details" data-id="${entry.id}">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger block-ip" data-ip="${entry.srcIp}">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                </td>
+            `;
+            
+            table.insertBefore(newRow, table.firstChild);
+            
+            // Limit to 100 entries
+            if (table.children.length > 100) {
+                table.removeChild(table.lastChild);
+            }
+        }
+
+        // Get color based on threat level
+        function getThreatLevelColor(level) {
+            switch(level) {
+                case 'Critical':
+                case 'High':
+                    return 'danger';
+                case 'Medium':
+                    return 'warning';
+                case 'Low':
+                    return 'info';
+                default:
+                    return 'secondary';
+            }
+        }
+
+        // Update system uptime display
+        function updateUptime() {
+            const now = new Date();
+            const diff = now - startTime;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('uptime').textContent = 
+                `Uptime: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Simulate live traffic updates
+        function simulateLiveTraffic() {
+            if (!monitoringActive) return;
+            
+            const protocols = ['TCP', 'UDP', 'ICMP', 'Other'];
+            const threatLevels = ['None', 'Low', 'Medium', 'High'];
+            const threatTypes = ['Brute Force', 'DDoS', 'SQL Injection', 'Port Scan', 'Malware', 'Phishing'];
+            
+            // Generate random traffic entry
+            const entry = {
+                id: 'traffic-' + Date.now(),
+                timestamp: new Date().toLocaleTimeString(),
+                srcIp: `192.168.${Math.floor(Math.random() * 254)}.${Math.floor(Math.random() * 254)}`,
+                dstIp: `10.0.${Math.floor(Math.random() * 254)}.${Math.floor(Math.random() * 254)}`,
+                protocol: protocols[Math.floor(Math.random() * protocols.length)],
+                port: Math.floor(Math.random() * 65535),
+                size: Math.floor(Math.random() * 1500),
+                duration: Math.floor(Math.random() * 500),
+                threatLevel: threatLevels[Math.floor(Math.random() * threatLevels.length)]
+            };
+            
+            addLiveTrafficEntry(entry);
+            
+            // Occasionally add a threat log entry
+            if (Math.random() > 0.7) {
+                const threatEntry = {
+                    id: 'threat-' + Date.now(),
+                    timestamp: new Date().toLocaleString(),
+                    srcIp: entry.srcIp,
+                    dstIp: entry.dstIp,
+                    threatType: threatTypes[Math.floor(Math.random() * threatTypes.length)],
+                    confidence: Math.floor(Math.random() * 30) + 70,
+                    protocol: entry.protocol,
+                    details: `Detected ${threatTypes[Math.floor(Math.random() * threatTypes.length)]} attempt from ${entry.srcIp}`
+                };
+                
+                addThreatLogEntry(threatEntry);
+                
+                // Update threat count
+                threatCount++;
+                document.getElementById('threatsCount').textContent = threatCount;
+                document.getElementById('lastDetection').textContent = threatEntry.threatType;
+                document.getElementById('lastDetectionTime').textContent = threatEntry.timestamp;
+                
+                // Show alert for high confidence threats
+                if (threatEntry.confidence > 85) {
+                    const modalBody = document.getElementById('alertModalBody');
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h4><i class="fas fa-exclamation-triangle"></i> ${threatEntry.threatType} Detected</h4>
+                            <p><strong>Source IP:</strong> ${threatEntry.srcIp}</p>
+                            <p><strong>Destination IP:</strong> ${threatEntry.dstIp}</p>
+                            <p><strong>Confidence:</strong> ${threatEntry.confidence}%</p>
+                            <p><strong>Details:</strong> ${threatEntry.details}</p>
+                            <hr>
+                            <p class="mb-0">Timestamp: ${threatEntry.timestamp}</p>
+                        </div>
+                    `;
+                    
+                    const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                    alertModal.show();
+                }
+            }
+            
+            // Update traffic volume
+            document.getElementById('trafficVolume').textContent = Math.floor(Math.random() * 5000) + 1000;
+            
+            // Update system metrics
+            document.getElementById('cpuUsage').textContent = Math.floor(Math.random() * 30) + 5 + '%';
+            document.getElementById('memoryUsage').textContent = Math.floor(Math.random() * 40) + 20 + '%';
+            
+            // Update last updated time
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+            
+            // Update charts
+            updateCharts(trafficData);
+            
+            // Schedule next update
+            setTimeout(simulateLiveTraffic, Math.floor(Math.random() * 2000) + 500);
+        }
+
+        // Start/stop monitoring
+        document.getElementById('startMonitoring').addEventListener('click', () => {
+            if (!monitoringActive) {
+                monitoringActive = true;
+                startTime = new Date();
+                document.getElementById('systemStatus').textContent = 'Active';
+                document.getElementById('startMonitoring').classList.add('active');
+                document.getElementById('stopMonitoring').classList.remove('active');
+                simulateLiveTraffic();
+                
+                // Start uptime counter
+                setInterval(updateUptime, 1000);
+            }
+        });
+
+        document.getElementById('stopMonitoring').addEventListener('click', () => {
+            monitoringActive = false;
+            document.getElementById('systemStatus').textContent = 'Inactive';
+            document.getElementById('stopMonitoring').classList.add('active');
+            document.getElementById('startMonitoring').classList.remove('active');
+        });
+
+        // Pause/refresh live traffic
+        document.getElementById('pauseMonitoring').addEventListener('click', () => {
+            monitoringActive = !monitoringActive;
+            const pauseBtn = document.getElementById('pauseMonitoring');
+            if (monitoringActive) {
+                pauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+                pauseBtn.classList.remove('btn-outline-danger');
+                pauseBtn.classList.add('btn-outline-secondary');
+                simulateLiveTraffic();
+            } else {
+                pauseBtn.innerHTML = '<i class="fas fa-play"></i> Resume';
+                pauseBtn.classList.remove('btn-outline-secondary');
+                pauseBtn.classList.add('btn-outline-danger');
+            }
+        });
+
+        document.getElementById('refreshNow').addEventListener('click', () => {
+            if (monitoringActive) {
+                simulateLiveTraffic();
+            }
+        });
+
+        // Initialize the charts when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            
+            // Start monitoring by default
+            document.getElementById('startMonitoring').click();
+            
+            // Add event listeners for detail buttons
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.view-details')) {
+                    const entryId = e.target.closest('.view-details').getAttribute('data-id');
+                    showTrafficDetails(entryId);
+                }
+                
+                if (e.target.closest('.block-ip')) {
+                    const ip = e.target.closest('.block-ip').getAttribute('data-ip');
+                    blockIpAddress(ip);
+                }
+            });
+        });
+
+        // Show traffic details modal
+        function showTrafficDetails(entryId) {
+            // In a real system, this would fetch actual data for the entry
+            // Here we just simulate some details
+            
+            document.getElementById('detailTimestamp').textContent = new Date().toLocaleString();
+            document.getElementById('detailSrcIp').textContent = `192.168.${Math.floor(Math.random() * 254)}.${Math.floor(Math.random() * 254)}`;
+            document.getElementById('detailSrcPort').textContent = Math.floor(Math.random() * 65535);
+            document.getElementById('detailSrcMac').textContent = '00:1A:2B:3C:4D:5E';
+            document.getElementById('detailDstIp').textContent = `10.0.${Math.floor(Math.random() * 254)}.${Math.floor(Math.random() * 254)}`;
+            document.getElementById('detailDstPort').textContent = Math.floor(Math.random() * 65535);
+            document.getElementById('detailDstMac').textContent = '00:5E:4D:3C:2B:1A';
+            document.getElementById('detailProtocol').textContent = ['TCP', 'UDP', 'ICMP'][Math.floor(Math.random() * 3)];
+            
+            const threatTypes = ['Brute Force', 'DDoS', 'SQL Injection', 'Port Scan', 'Malware'];
+            const threatType = threatTypes[Math.floor(Math.random() * threatTypes.length)];
+            const confidence = Math.floor(Math.random() * 30) + 70;
+            const riskScore = Math.floor(Math.random() * 30) + 70;
+            
+            document.getElementById('detailThreatClass').textContent = threatType;
+            document.getElementById('detailThreatClass').className = 'badge bg-' + getThreatLevelColor(threatType.includes('Force') || threatType.includes('DDoS') ? 'High' : 'Medium');
+            document.getElementById('detailConfidence').textContent = confidence;
+            document.getElementById('detailConfidenceBar').style.width = confidence + '%';
+            document.getElementById('detailRiskScore').textContent = riskScore;
+            document.getElementById('detailRiskBar').style.width = riskScore + '%';
+            document.getElementById('detailAiAnalysis').textContent = 
+                `The AI model has detected patterns consistent with ${threatType.toLowerCase()} activity. ` +
+                `This matches known attack signatures with ${confidence}% confidence.`;
+            
+            // Generate sample packet contents
+            let packetContents = '';
+            for (let i = 0; i < 50; i++) {
+                packetContents += Math.random().toString(16).substr(2, 8) + ' ';
+                if (i % 8 === 7) packetContents += '\n';
+            }
+            document.getElementById('detailPacketContents').textContent = packetContents;
+            
+            // Generate related activity
+            const relatedActivity = document.getElementById('relatedActivity');
+            relatedActivity.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(Date.now() - Math.floor(Math.random() * 3600000)).toLocaleTimeString()}</td>
+                    <td>${['Connection', 'Request', 'Response'][Math.floor(Math.random() * 3)]}</td>
+                    <td>${document.getElementById('detailSrcIp').textContent}</td>
+                    <td>${document.getElementById('detailDstIp').textContent}</td>
+                    <td>${['Initial connection', 'Data transfer', 'Session termination'][Math.floor(Math.random() * 3)]}</td>
+                `;
+                relatedActivity.appendChild(row);
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById('trafficDetailsModal'));
+            modal.show();
+        }
+
+        // Block IP address
+        function blockIpAddress(ip) {
+            if (confirm(`Are you sure you want to block all traffic from ${ip}?`)) {
+                alert(`IP address ${ip} has been added to the block list.`);
+                // In a real system, this would make an API call to update firewall rules
+            }
+        }
+
+        // Export data
+        document.getElementById('exportData').addEventListener('click', () => {
+            // Example CSV data generation - replace with actual data export logic
+            const csvHeaders = ['Timestamp', 'Source IP', 'Destination IP', 'Protocol', 'Port', 'Size (bytes)', 'Duration', 'Threat Level'];
+            const rows = [];
+            const liveTrafficRows = document.querySelectorAll('#liveTraffic tr');
+            liveTrafficRows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                const rowData = [];
+                for (let i = 0; i < cols.length - 1; i++) { // exclude last column (Actions)
+                    rowData.push(cols[i].textContent.trim());
+                }
+                rows.push(rowData.join(','));
+            });
+            const csvContent = [csvHeaders.join(','), ...rows].join('\\n');
+
+            // Create a Blob from the CSV content
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            // Create a temporary link to trigger download
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'exported_traffic_data.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('exportLogs').addEventListener('click', () => {
+            // Trigger download of server.log file
+            const link = document.createElement('a');
+            link.href = '/download/server.log';
+            link.download = 'server.log';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+        // Add event listeners for alert modal buttons
+        document.getElementById('dismissAlertBtn').addEventListener('click', () => {
+            // Emit dismiss_alert event with alert id if available
+            const alertId = currentAlertData?.id || null;
+            socket.emit('dismiss_alert', { alert_id: alertId });
+        });
+
+        document.getElementById('viewThreatDetails').addEventListener('click', () => {
+            const threatId = currentAlertData?.id || null;
+            socket.emit('investigate_threat', { threat_id: threatId });
+        });
+
+        document.getElementById('addToWhitelist').addEventListener('click', () => {
+            const ip = currentAlertData?.source_ip || null;
+            socket.emit('whitelist_ip', { ip: ip });
+        });
+
+        document.getElementById('blockSource').addEventListener('click', () => {
+            const ip = currentAlertData?.source_ip || null;
+            socket.emit('block_threat', { ip: ip });
+        });
+
+        // Store current alert data when showing alert modal
+        let currentAlertData = null;
+        function showAlertModal(alertData) {
+            currentAlertData = alertData;
+            const modalBody = document.getElementById('alertModalBody');
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <h4><i class="fas fa-exclamation-triangle"></i> ${alertData.threatType} Detected</h4>
+                    <p><strong>Source IP:</strong> ${alertData.source_ip}</p>
+                    <p><strong>Destination IP:</strong> ${alertData.dstIp}</p>
+                    <p><strong>Confidence:</strong> ${alertData.confidence}%</p>
+                    <p><strong>Details:</strong> ${alertData.details}</p>
+                    <hr>
+                    <p class="mb-0">Timestamp: ${alertData.timestamp}</p>
+                </div>
+            `;
+            const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+            alertModal.show();
+        }
+
+        // Example usage: listen for new_alert event from server
+        socket.on('new_alert', (data) => {
+            showAlertModal(data);
+        });
+    </script>
+</body>
+</html>

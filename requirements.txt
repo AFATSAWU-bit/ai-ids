@@ -1,0 +1,10 @@
+flask
+flask-socketio
+pandas
+numpy
+scikit-learn==1.2.2
+joblib
+celery
+redis
+eventlet
+gunicorn
